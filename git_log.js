@@ -14,6 +14,8 @@ let authors = new Map() //提交的用户列表
 let repos = new Set() //仓库列表
 let result = {}
 let cache_config = getConfig()
+//别名
+const alias = getAlias()
 function init() {
 	return inquirer.prompt({
 		message: '请输入用户授权码:',
@@ -166,7 +168,7 @@ function getEvents(limit = 20) {
 			let data
 			try {
 				data = await gitee.getEvents(this.userInfo.login, limit, prev_id)
-				if(data.message){
+				if (data.message) {
 					spinner.fail(data.message)
 					reject(data.message)
 					return
@@ -222,7 +224,7 @@ function setFilter() {
 
 	let choices_repos = []
 	repos.forEach((value) => {
-		choices_repos.push({ name: value, value: value, checked: cache_config.repos.includes(value) })
+		choices_repos.push({ name: alias[value] ? `${alias[value]}<${value}>` : value, value: value, checked: cache_config.repos.includes(value) })
 	})
 	return inquirer.prompt([
 		{
@@ -252,8 +254,17 @@ function setFilter() {
 		},
 	])
 }
+
+function getAlias() {
+	let names = utils.read_cache('gitee_log_alias')
+	if (names == null) {
+		return {}
+	}
+	return names
+}
+
 function getConfig() {
-	let config = utils.read_cache('config')
+	let config = utils.read_cache('gitee_log_config')
 	if (config == null) {
 		return {
 			access_token: '',
@@ -279,7 +290,7 @@ function saveConfig(config) {
 		}
 	})
 	config.access_token = access_token
-	utils.save_cache('config', config)
+	utils.save_cache('gitee_log_config', config)
 }
 //保存结果
 async function saveResult() {
@@ -289,7 +300,7 @@ async function saveResult() {
 		if (!save_filter.repos.includes(key)) {
 			continue
 		}
-		str += `## ${key}\n\n`
+		str += `## ${alias[key] ? `${alias[key]}<${key}>` : key}\n\n`
 		result[key].forEach((commit) => {
 			if (!save_filter.emails.includes(commit.author.email)) {
 				return
@@ -298,10 +309,10 @@ async function saveResult() {
 		})
 		str += `\n`
 	}
-	const save_file=path.resolve(process.cwd(), 'git_log.md')
+	const save_file = path.resolve(process.cwd(), 'git_log.md')
 	fs.writeFileSync(save_file, str)
 	saveConfig(save_filter)
-	console.log('保存成功: '+save_file)
+	console.log('保存成功: ' + save_file)
 }
 
 export default {

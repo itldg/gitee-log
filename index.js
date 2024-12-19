@@ -12,4 +12,6 @@ gitLog
 		} else {
 			console.error(error)
 		}
+	}).finally(() => {
+		process.exit(1)
 	})
