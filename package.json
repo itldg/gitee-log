@@ -1,0 +1,25 @@
+{
+  "name": "gitee-log",
+  "description": "分析 Gitee 用户的提交日志,生成 Markdown 格式的日志",
+  "version": "1.0.0",
+  "bin": "index.js",
+  "keywords": [
+    "gitee",
+    "Report"
+  ],
+  "type": "module",
+  "author": "ITLDG",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itldg/gitee-log.git"
+  },
+  "bugs": {
+    "url": "https://github.com/itldg/gitee-log/issues"
+  },
+  "homepage": "https://www.itldg.com",
+  "dependencies": {
+    "inquirer": "^12.2.0",
+    "ora": "^8.1.1"
+  }
+}
