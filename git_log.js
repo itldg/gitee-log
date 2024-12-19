@@ -312,7 +312,7 @@ async function saveResult() {
 	const save_file = path.resolve(process.cwd(), 'git_log.md')
 	fs.writeFileSync(save_file, str)
 	saveConfig(save_filter)
-	console.log('保存成功: ' + save_file)
+	ora().succeed('保存成功: ' + save_file)
 }
 
 export default {
