@@ -10,8 +10,9 @@ gitLog
 		if (error instanceof Error && error.name === 'ExitPromptError') {
 			console.log('👋 用户退出,拜拜!')
 		} else {
-			console.error(error)
+			console.log(`❗ ${error.message}`)
 		}
-	}).finally(() => {
+	})
+	.finally(() => {
 		process.exit(1)
 	})

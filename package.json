@@ -1,7 +1,7 @@
 {
   "name": "gitee-log",
   "description": "分析 Gitee 用户的提交日志,生成 Markdown 格式的日志",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "bin": "index.js",
   "keywords": [
     "gitee",

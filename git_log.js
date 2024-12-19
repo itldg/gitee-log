@@ -186,6 +186,27 @@ function getEvents(limit = 20) {
 			prev_id = data[data.length - 1].id
 			for (let index = 0; index < data.length; index++) {
 				const element = data[index]
+				if (element.type == 'PullRequestEvent') {
+					if (element.payload.state != 'merged') {
+						continue
+					}
+					repos.add(element.repo.full_name)
+					if (!result[element.repo.full_name]) {
+						result[element.repo.full_name] = []
+					}
+					result[element.repo.full_name].push({
+						email: '',
+						message: element.payload.body,
+					})
+					const authorKey = element.payload.user.login
+					if (!authors.has(authorKey)) {
+						authors.set(authorKey, {
+							email: '',
+							name: element.payload.user.login,
+						})
+					}
+					continue
+				}
 				if (element.type != 'PushEvent') {
 					continue
 				}
@@ -203,7 +224,10 @@ function getEvents(limit = 20) {
 				element.payload.commits.forEach((commit) => {
 					if (!commit.message.startsWith('Merge ')) {
 						repos.add(element.repo.full_name)
-						result[element.repo.full_name].push(commit)
+						result[element.repo.full_name].push({
+							email: commit.author.email,
+							message: commit.message,
+						})
 						const authorKey = commit.author.name + '<' + commit.author.email + '>'
 						if (!authors.has(authorKey)) {
 							authors.set(authorKey, commit.author)
@@ -226,6 +250,9 @@ function setFilter() {
 	repos.forEach((value) => {
 		choices_repos.push({ name: alias[value] ? `${alias[value]}<${value}>` : value, value: value, checked: cache_config.repos.includes(value) })
 	})
+	if (choices_repos.length === 0) {
+		throw new Error('没有获取到提交信息')
+	}
 	return inquirer.prompt([
 		{
 			type: 'checkbox',
@@ -251,6 +278,7 @@ function setFilter() {
 				}
 				return true
 			},
+			when: (answers) => choices_emails.length > 0, //显示条件
 		},
 	])
 }
@@ -285,7 +313,7 @@ function saveConfig(config) {
 		authors_temp.add(value.email)
 	})
 	cache_config.emails.forEach((value) => {
-		if (!authors_temp.has(value) && !config.emails.includes(emavalueil)) {
+		if (!authors_temp.has(value) && !config.emails.includes(value)) {
 			config.emails.push(value)
 		}
 	})
@@ -302,7 +330,7 @@ async function saveResult() {
 		}
 		str += `## ${alias[key] ? `${alias[key]}<${key}>` : key}\n\n`
 		result[key].forEach((commit) => {
-			if (!save_filter.emails.includes(commit.author.email)) {
+			if (commit.email != '' && !save_filter.emails.includes(commit.email)) {
 				return
 			}
 			str += `- ${commit.message.trim()}\n`
