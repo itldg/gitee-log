@@ -10,7 +10,7 @@
 
 ## 辅助配置
 
-自定义仓库名称,手动创建`C:\Users\你的用户名\gitee_log_alias`, 内容如下：
+自定义仓库名称,手动创建`gitee_log_alias`, 内容如下：
 
 ```json
 {

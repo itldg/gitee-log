@@ -1,3 +1,5 @@
 /node_modules
 /.vscode
 /dist
+/git_log.md
+/gitee_log_config

@@ -12,6 +12,7 @@ let endDate = null
 let access_token = ''
 let authors = new Map() //提交的用户列表
 let repos = new Set() //仓库列表
+let commits = new Set() //提交列表
 let result = {}
 let cache_config = getConfig()
 //别名
@@ -190,6 +191,11 @@ function getEvents(limit = 20) {
 					if (element.payload.state != 'merged') {
 						continue
 					}
+					const sha = element.payload.after ? element.payload.after : element.payload.head.sha
+					if (commits.has(sha)) {
+						continue
+					}
+					commits.add(sha)
 					repos.add(element.repo.full_name)
 					if (!result[element.repo.full_name]) {
 						result[element.repo.full_name] = []
@@ -221,8 +227,13 @@ function getEvents(limit = 20) {
 					resolve(result)
 					return
 				}
-				element.payload.commits.forEach((commit) => {
+				for (let index = 0; index < element.payload.commits.length; index++) {
+					const commit = element.payload.commits[index]
 					if (!commit.message.startsWith('Merge ')) {
+						if (commits.has(commit.sha)) {
+							continue
+						}
+						commits.add(commit.sha)
 						repos.add(element.repo.full_name)
 						result[element.repo.full_name].push({
 							email: commit.author.email,
@@ -233,7 +244,7 @@ function getEvents(limit = 20) {
 							authors.set(authorKey, commit.author)
 						}
 					}
-				})
+				}
 			}
 		}
 	})
